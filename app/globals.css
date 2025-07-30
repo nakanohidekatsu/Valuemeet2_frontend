@@ -77,3 +77,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* モーダルのz-indexを最前面に設定 */
+@layer components {
+  .dialog-overlay {
+    z-index: 50 !important;
+  }
+  
+  .dialog-content {
+    z-index: 50 !important;
+  }
+}
+
+/* すべてのダイアログが画面前面に表示されるようにする */
+[data-radix-portal] {
+  z-index: 50 !important;
+}

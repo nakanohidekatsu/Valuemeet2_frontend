@@ -135,7 +135,10 @@ export default function TodoExtractionModal({ open, onOpenChange, onAddTodos }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
+      <DialogContent 
+        className="max-w-4xl max-h-[95vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <DialogHeader className="pb-6">
           <DialogTitle className="text-2xl font-bold text-gray-900 text-center">
             ToDoの抽出
@@ -145,7 +148,7 @@ export default function TodoExtractionModal({ open, onOpenChange, onAddTodos }: 
           </p>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
           {/* File Uploader */}
           <div className="flex justify-center">
             <div className="w-full max-w-md">

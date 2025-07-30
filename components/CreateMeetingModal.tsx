@@ -163,13 +163,16 @@ export default function CreateMeetingModal({ open, onOpenChange, onCreateMeeting
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
+      <DialogContent 
+        className="max-w-4xl max-h-[95vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <DialogHeader className="pb-6">
           <DialogTitle className="text-2xl font-bold text-gray-900">新しい会議の作成</DialogTitle>
           <p className="text-gray-600 mt-2">会議の基本的な情報を入力してください</p>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
           {/* 基本情報 */}
           <Card className="bg-white border border-gray-200">
             <CardHeader>

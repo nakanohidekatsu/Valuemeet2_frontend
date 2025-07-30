@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
   Play, 
+  Pause,
   Star, 
   Download, 
   FileText, 
@@ -13,6 +14,8 @@ import {
   Clock, 
   Users 
 } from 'lucide-react';
+import EvaluationModal from '@/components/EvaluationModal';
+import TodoExtractionModal from '@/components/TodoExtractionModal';
 
 
 // UIコンポーネントのインポートを追加
@@ -138,8 +141,11 @@ export default function MeetingFacilitation() {
   const router = useRouter();
   const [meeting, setMeeting] = useState<any>(null);
   const [isStarted, setIsStarted] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [minutes, setMinutes] = useState(mockMinutes);
   const [currentAgenda, setCurrentAgenda] = useState(0);
+  const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
+  const [isTodoExtractionModalOpen, setIsTodoExtractionModalOpen] = useState(false);
 
   useEffect(() => {
     const meetingData = getMeetingById(params.id as string);
@@ -161,7 +167,22 @@ export default function MeetingFacilitation() {
   }
 
   const handleStartMeeting = () => {
-    setIsStarted(true);
+    if (!isStarted) {
+      // 初回開始
+      setIsStarted(true);
+      setIsPaused(false);
+    } else {
+      // 開始後は停止/再開を切り替え
+      setIsPaused(!isPaused);
+    }
+  };
+
+  const handleOpenEvaluation = () => {
+    setIsEvaluationModalOpen(true);
+  };
+
+  const handleOpenTodoExtraction = () => {
+    setIsTodoExtractionModalOpen(true);
   };
 
   const handleFacilitationAction = (action: string) => {
@@ -205,13 +226,32 @@ export default function MeetingFacilitation() {
         <div className="flex items-center space-x-3">
           <Button 
             onClick={handleStartMeeting}
-            className={`${isStarted ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'}`}
-            disabled={isStarted}
+            className={`${
+              !isStarted 
+                ? 'bg-orange-600 hover:bg-orange-700' 
+                : isPaused 
+                  ? 'bg-orange-600 hover:bg-orange-700' 
+                  : 'bg-green-600 hover:bg-green-700'
+            }`}
           >
-            <Play className="h-4 w-4 mr-2" />
-            {isStarted ? '進行中' : '開始'}
+            {!isStarted ? (
+              <>
+                <Play className="h-4 w-4 mr-2" />
+                開始
+              </>
+            ) : isPaused ? (
+              <>
+                <Play className="h-4 w-4 mr-2" />
+                再開
+              </>
+            ) : (
+              <>
+                <Pause className="h-4 w-4 mr-2" />
+                停止
+              </>
+            )}
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleOpenEvaluation}>
             <Star className="h-4 w-4 mr-2" />
             評価
           </Button>
@@ -346,7 +386,7 @@ export default function MeetingFacilitation() {
                 <FileText className="h-4 w-4 mr-1" />
                 TXT
               </Button>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={handleOpenTodoExtraction}>
                 抽出
               </Button>
             </div>
@@ -374,6 +414,27 @@ export default function MeetingFacilitation() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modals */}
+      <EvaluationModal 
+        open={isEvaluationModalOpen}
+        onOpenChange={setIsEvaluationModalOpen}
+        meetingTitle={meeting.title}
+        facilitator={meeting.facilitator}
+        onSubmitEvaluation={(evaluation) => {
+          console.log('評価が送信されました:', evaluation);
+          setIsEvaluationModalOpen(false);
+        }}
+      />
+      
+      <TodoExtractionModal 
+        open={isTodoExtractionModalOpen}
+        onOpenChange={setIsTodoExtractionModalOpen}
+        onAddTodos={(todos) => {
+          console.log('TODOが追加されました:', todos);
+          setIsTodoExtractionModalOpen(false);
+        }}
+      />
     </div>
   );
 }
