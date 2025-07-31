@@ -93,3 +93,49 @@
 [data-radix-portal] {
   z-index: 50 !important;
 }
+
+/* Selectコンポーネントのチェックマークを非表示にする */
+@layer components {
+  .select-item-indicator {
+    display: none !important;
+  }
+  
+  /* Radix UI Selectのチェックマークを非表示 */
+  [data-radix-select-item-indicator] {
+    display: none !important;
+  }
+  
+  /* SelectItemTextの右側のアイコンを非表示 */
+  [role="option"] > span[data-state] {
+    display: none !important;
+  }
+  
+  /* より具体的なセレクタでチェックマークアイコンを非表示 */
+  [data-radix-select-content] [data-radix-select-item] > span:last-child {
+    display: none !important;
+  }
+  
+  /* Radix Select Item のインジケーターアイコン全般を非表示 */
+  [data-radix-select-item] [data-radix-select-item-indicator] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  
+  /* より強力なセレクタ */
+  [role="option"] span[aria-hidden="true"] {
+    display: none !important;
+  }
+  
+  /* SelectItemのアイコン部分を完全に非表示 */
+  [data-radix-select-item] > span[style] {
+    display: none !important;
+  }
+  
+  /* 右端の選択インジケーターを非表示 */
+  [data-radix-select-item] > :last-child:not(:first-child) {
+    display: none !important;
+  }
+}

@@ -136,29 +136,29 @@ export default function TodoExtractionModal({ open, onOpenChange, onAddTodos }: 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-4xl max-h-[95vh] overflow-y-auto"
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <DialogHeader className="pb-6">
-          <DialogTitle className="text-2xl font-bold text-gray-900 text-center">
+        <DialogHeader className="pb-4">
+          <DialogTitle className="text-xl font-bold text-gray-900 text-center">
             ToDoの抽出
           </DialogTitle>
-          <p className="text-gray-600 text-center mt-2">
+          <p className="text-gray-600 text-center mt-2 text-sm">
             会議資料からToDoを自動抽出します
           </p>
         </DialogHeader>
 
-        <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
+        <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
           {/* File Uploader */}
           <div className="flex justify-center">
-            <div className="w-full max-w-md">
+            <div className="w-full">
               <label
                 htmlFor="file-upload"
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
               >
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-8 h-8 mb-2 text-gray-400" />
-                  <p className="mb-2 text-sm text-gray-500">
+                <div className="flex flex-col items-center justify-center pt-3 pb-3">
+                  <Upload className="w-6 h-6 mb-1 text-gray-400" />
+                  <p className="mb-1 text-xs text-gray-500">
                     <span className="font-semibold">クリックしてファイルをアップロード</span>
                   </p>
                   <p className="text-xs text-gray-500">PDF, DOCX, TXT (最大 10MB)</p>
@@ -172,7 +172,7 @@ export default function TodoExtractionModal({ open, onOpenChange, onAddTodos }: 
                 />
               </label>
               {uploadedFile && (
-                <div className="mt-3 flex items-center space-x-2 text-sm text-gray-600">
+                <div className="mt-2 flex items-center space-x-2 text-sm text-gray-600">
                   <FileText className="h-4 w-4" />
                   <span>{uploadedFile.name}</span>
                   <CheckCircle className="h-4 w-4 text-green-600" />
@@ -182,11 +182,12 @@ export default function TodoExtractionModal({ open, onOpenChange, onAddTodos }: 
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-center space-x-4">
+          <div className="flex justify-center space-x-3">
             <Button
               onClick={handleExtract}
               disabled={!uploadedFile || isExtracting}
-              className={`px-8 ${
+              size="sm"
+              className={`px-6 ${
                 !uploadedFile || isExtracting
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-600 hover:bg-blue-700'
@@ -197,7 +198,8 @@ export default function TodoExtractionModal({ open, onOpenChange, onAddTodos }: 
             <Button
               onClick={handleRegister}
               disabled={extractedTodos.length === 0 || isRegistering}
-              className={`px-8 ${
+              size="sm"
+              className={`px-6 ${
                 extractedTodos.length === 0 || isRegistering
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-orange-600 hover:bg-orange-700'
@@ -209,28 +211,28 @@ export default function TodoExtractionModal({ open, onOpenChange, onAddTodos }: 
 
           {/* Extracted Todos */}
           {extractedTodos.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-base font-semibold text-gray-900 mb-1">
                   抽出されたToDo ({extractedTodos.length}件)
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs text-gray-600">
                   以下のToDoが抽出されました。登録ボタンを押してToDo管理に追加してください。
                 </p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-1 gap-3 max-h-64 overflow-y-auto">
                 {extractedTodos.map((todo) => (
-                  <Card key={todo.id} className="bg-white border border-gray-200 hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
+                  <Card key={todo.id} className="bg-white border border-gray-200 hover:shadow-sm transition-shadow">
+                    <CardContent className="p-3">
                       <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-semibold text-gray-900 text-sm">{todo.title}</h4>
+                        <h4 className="font-medium text-gray-900 text-sm">{todo.title}</h4>
                         <Badge className={`${getPriorityColor(todo.priority)} text-xs`}>
                           {getPriorityText(todo.priority)}
                         </Badge>
                       </div>
-                      <p className="text-xs text-gray-600 mb-3 line-clamp-2">{todo.description}</p>
-                      <div className="space-y-2 text-xs text-gray-500">
+                      <p className="text-xs text-gray-600 mb-2 line-clamp-2">{todo.description}</p>
+                      <div className="space-y-1 text-xs text-gray-500">
                         <div className="flex items-center">
                           <User className="h-3 w-3 mr-1" />
                           <span>{todo.assignee}</span>
@@ -238,10 +240,6 @@ export default function TodoExtractionModal({ open, onOpenChange, onAddTodos }: 
                         <div className="flex items-center">
                           <Calendar className="h-3 w-3 mr-1" />
                           <span>{todo.dueDate}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <AlertCircle className="h-3 w-3 mr-1" />
-                          <span>{todo.meetingTitle}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -252,11 +250,12 @@ export default function TodoExtractionModal({ open, onOpenChange, onAddTodos }: 
           )}
 
           {/* Cancel Button */}
-          <div className="flex justify-center pt-4 border-t border-gray-200">
+          <div className="flex justify-center pt-3 border-t border-gray-200">
             <Button
               variant="outline"
               onClick={handleCancel}
-              className="px-8"
+              size="sm"
+              className="px-6"
             >
               キャンセル
             </Button>

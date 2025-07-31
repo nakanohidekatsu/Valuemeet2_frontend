@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Search, ChevronDown, Star, Calendar, Users } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import EvaluationModal from '@/components/EvaluationModal';
+import { Search, Calendar, Users, ChevronDown, Star } from 'lucide-react';
 
 const pendingEvaluations = [
   {
@@ -93,32 +93,18 @@ const renderStars = (rating: number) => {
   ));
 };
 
-export default function Evaluation() {
-  const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
-  const [selectedMeeting, setSelectedMeeting] = useState<any>(null);
+export default function EvaluationPage() {
+  const router = useRouter();
   const [completedEvals, setCompletedEvals] = useState(completedEvaluations);
   const [pendingEvals, setPendingEvals] = useState(pendingEvaluations);
 
   const handleStartEvaluation = (meeting: any) => {
-    setSelectedMeeting(meeting);
-    setIsEvaluationModalOpen(true);
-  };
-
-  const handleSubmitEvaluation = (evaluation: any) => {
-    // Move meeting from pending to completed
-    const evaluatedMeeting = {
-      ...selectedMeeting,
-      rating: (evaluation.ratings.satisfaction + evaluation.ratings.participation + 
-               evaluation.ratings.contribution + evaluation.ratings.facilitation) / 4,
-      efficiency: evaluation.ratings.satisfaction >= 4 ? '良好' : 
-                  evaluation.ratings.satisfaction >= 3 ? '普通' : '要改善',
-      satisfaction: evaluation.ratings.satisfaction,
-      timeUtilization: evaluation.ratings.contribution
-    };
-    
-    setCompletedEvals(prev => [evaluatedMeeting, ...prev]);
-    setPendingEvals(prev => prev.filter(meeting => meeting.id !== selectedMeeting.id));
-    setSelectedMeeting(null);
+    // ページ遷移で評価登録シートへ移動
+    const params = new URLSearchParams({
+      title: meeting.title,
+      facilitator: '田中太郎'
+    });
+    router.push(`/evaluation/form?${params.toString()}`);
   };
 
   return (
@@ -146,7 +132,7 @@ export default function Evaluation() {
                 <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
                   評価待ち会議
                   <Badge className="ml-2 bg-orange-100 text-orange-700">
-                    {pendingEvaluations.length}件
+                    {pendingEvals.length}件
                   </Badge>
                 </CardTitle>
                 <ChevronDown className="h-5 w-5 text-gray-500" />
@@ -250,14 +236,6 @@ export default function Evaluation() {
           </CollapsibleContent>
         </Collapsible>
       </Card>
-
-      <EvaluationModal
-        open={isEvaluationModalOpen}
-        onOpenChange={setIsEvaluationModalOpen}
-        meetingTitle={selectedMeeting?.title || ''}
-        facilitator="田中太郎"
-        onSubmitEvaluation={handleSubmitEvaluation}
-      />
     </div>
   );
 }

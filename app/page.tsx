@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Users, TrendingUp, Plus } from 'lucide-react';
-import CreateMeetingModal from '@/components/CreateMeetingModal';
 
 const statsCards = [
   { title: '今月の会議数', value: '24', icon: Calendar, color: 'text-blue-600' },
@@ -26,13 +26,7 @@ const recentEvaluations = [
 ];
 
 export default function Dashboard() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleCreateMeeting = (meetingData: any) => {
-    // ダッシュボードでは作成後の処理は特に必要ないが、
-    // 実際のアプリケーションでは状態管理やAPIコールを行う
-    console.log('New meeting created:', meetingData);
-  };
+  const router = useRouter();
 
   return (
     <div className="space-y-6">
@@ -62,7 +56,7 @@ export default function Dashboard() {
             <Button 
               size="sm" 
               className="bg-orange-600 hover:bg-orange-700"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => router.push('/create-meeting')}
             >
               <Plus className="h-4 w-4 mr-2" />
               新規作成
@@ -121,12 +115,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-
-      <CreateMeetingModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        onCreateMeeting={handleCreateMeeting}
-      />
     </div>
   );
 }

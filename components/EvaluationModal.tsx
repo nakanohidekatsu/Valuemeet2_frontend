@@ -87,15 +87,12 @@ export default function EvaluationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent 
-        className="max-w-2xl max-h-[95vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto">
         <DialogHeader className="pb-6">
           <DialogTitle className="text-xl font-bold text-gray-900 text-center">
             {meetingTitle}
           </DialogTitle>
-          <div className="text-center mt-4" onClick={(e) => e.stopPropagation()}>
+          <div className="text-center mt-4">
             <h2 className="text-lg font-semibold text-gray-900">評価シート</h2>
             <p className="text-gray-600 mt-1">参加した会議の評価を教えてください</p>
           </div>

@@ -6,9 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
-import { Search, Filter, Plus, Calendar, Users, Clock } from 'lucide-react';
-import CreateMeetingModal from '@/components/CreateMeetingModal';
-import EditMeetingModal from '@/components/EditMeetingModal';
+import { Search, Filter, Plus, Calendar, Users, Clock, Check } from 'lucide-react';
 
 const initialMeetings = [
   {
@@ -100,9 +98,6 @@ const getStatusText = (status: string) => {
 export default function MeetingManagement() {
   const [meetings, setMeetings] = useState(initialMeetings);
   const [filteredMeetings, setFilteredMeetings] = useState(initialMeetings);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingMeeting, setEditingMeeting] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('date');
   const router = useRouter();
@@ -112,34 +107,8 @@ export default function MeetingManagement() {
     applyFiltersAndSort(meetings, searchQuery, sortBy);
   }, []);
 
-  const handleCreateMeeting = (meetingData: any) => {
-    const newMeeting = {
-      id: meetingData.id,
-      title: meetingData.title,
-      date: meetingData.date,
-      time: `${meetingData.startTime}-${meetingData.endTime}`,
-      participants: meetingData.participantCount,
-      status: meetingData.status,
-      location: meetingData.location,
-      agenda: meetingData.agenda || [],
-      facilitator: meetingData.facilitator || ''
-    };
-    const updatedMeetings = [newMeeting, ...meetings];
-    setMeetings(updatedMeetings);
-    applyFiltersAndSort(updatedMeetings, searchQuery, sortBy);
-  };
-
-  const handleUpdateMeeting = (updatedMeeting: any) => {
-    const updatedMeetings = meetings.map(meeting => 
-      meeting.id === updatedMeeting.id ? updatedMeeting : meeting
-    );
-    setMeetings(updatedMeetings);
-    applyFiltersAndSort(updatedMeetings, searchQuery, sortBy);
-  };
-
   const handleEditMeeting = (meeting: any) => {
-    setEditingMeeting(meeting);
-    setIsEditModalOpen(true);
+    router.push(`/edit-meeting?id=${meeting.id}`);
   };
 
   const handleSearch = (query: string) => {
@@ -185,6 +154,27 @@ export default function MeetingManagement() {
     router.push(`/meeting/${meetingId}`);
   };
 
+  const handleCreateMeeting = () => {
+    router.push('/create-meeting');
+  };
+
+  const handleCreateMeetingData = (meetingData: any) => {
+    const newMeeting = {
+      id: meetings.length + 1,
+      title: meetingData.title,
+      date: meetingData.date,
+      time: `${meetingData.startTime}-${meetingData.endTime}`,
+      participants: meetingData.participantCount || 1,
+      status: meetingData.status || 'draft',
+      location: meetingData.location,
+      agenda: meetingData.agenda || [],
+      facilitator: meetingData.facilitator || ''
+    };
+    const updatedMeetings = [newMeeting, ...meetings];
+    setMeetings(updatedMeetings);
+    applyFiltersAndSort(updatedMeetings, searchQuery, sortBy);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -192,7 +182,7 @@ export default function MeetingManagement() {
         <h1 className="text-2xl font-bold text-gray-900">会議管理</h1>
         <Button 
           className="bg-orange-600 hover:bg-orange-700"
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleCreateMeeting}
         >
           <Plus className="h-4 w-4 mr-2" />
           新しい会議の作成
@@ -211,14 +201,44 @@ export default function MeetingManagement() {
           />
         </div>
         <Select value={sortBy} onValueChange={handleSort}>
-          <SelectTrigger className="w-48 border-gray-300 flex-shrink-0">
-            <Filter className="h-4 w-4 mr-2" />
+          <SelectTrigger className="w-48 border-gray-300 bg-white flex-shrink-0">
+            <Filter className="h-4 w-4 mr-2 flex-shrink-0" />
             <SelectValue placeholder="並び順を選択" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="date">日付順</SelectItem>
-            <SelectItem value="status">ステータス順</SelectItem>
-            <SelectItem value="facilitator">ファシリテーター順</SelectItem>
+          <SelectContent className="bg-white border border-gray-200 shadow-lg">
+            <SelectItem 
+              value="date" 
+              className={`hover:bg-gray-50 ${sortBy === 'date' ? 'bg-orange-50' : ''}`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="text-gray-900">日付順</span>
+                {sortBy === 'date' && (
+                  <Check className="h-4 w-4 text-orange-600 ml-2" />
+                )}
+              </div>
+            </SelectItem>
+            <SelectItem 
+              value="status" 
+              className={`hover:bg-gray-50 ${sortBy === 'status' ? 'bg-orange-50' : ''}`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="text-gray-900">ステータス順</span>
+                {sortBy === 'status' && (
+                  <Check className="h-4 w-4 text-orange-600 ml-2" />
+                )}
+              </div>
+            </SelectItem>
+            <SelectItem 
+              value="facilitator" 
+              className={`hover:bg-gray-50 ${sortBy === 'facilitator' ? 'bg-orange-50' : ''}`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="text-gray-900">ファシリテーター順</span>
+                {sortBy === 'facilitator' && (
+                  <Check className="h-4 w-4 text-orange-600 ml-2" />
+                )}
+              </div>
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -300,19 +320,6 @@ export default function MeetingManagement() {
           ))
         )}
       </div>
-
-      <CreateMeetingModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        onCreateMeeting={handleCreateMeeting}
-      />
-
-      <EditMeetingModal
-        open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
-        meeting={editingMeeting}
-        onUpdateMeeting={handleUpdateMeeting}
-      />
     </div>
   );
 }

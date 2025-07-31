@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, Download, CheckCircle, Circle, AlertCircle } from 'lucide-react';
-import TodoExtractionModal from '@/components/TodoExtractionModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, Filter, Download, CheckCircle, Circle, AlertCircle, Check } from 'lucide-react';
 
 const initialTodos = [
   {
@@ -103,12 +104,59 @@ const getStatusText = (status: string) => {
 };
 
 export default function TodoManagement() {
+  const router = useRouter();
   const [todos, setTodos] = useState(initialTodos);
-  const [isExtractionModalOpen, setIsExtractionModalOpen] = useState(false);
+  const [filteredTodos, setFilteredTodos] = useState(initialTodos);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('dueDate');
 
-  const handleAddTodos = (newTodos: any[]) => {
-    setTodos(prev => [...newTodos, ...prev]);
+  // 検索とソート機能
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    applySearchAndSort(todos, query, sortBy);
   };
+
+  const handleSort = (sortOption: string) => {
+    setSortBy(sortOption);
+    applySearchAndSort(todos, searchQuery, sortOption);
+  };
+
+    const applySearchAndSort = (todoList: any[], query: string, sortOption: string) => {
+    let filtered = todoList;
+
+    // 検索フィルター
+    if (query) {
+      filtered = filtered.filter(todo => 
+        todo.title.toLowerCase().includes(query.toLowerCase()) ||
+        todo.description.toLowerCase().includes(query.toLowerCase()) ||
+        todo.assignee.toLowerCase().includes(query.toLowerCase()) ||
+        todo.meetingTitle.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+
+    // ソート
+    filtered = [...filtered].sort((a, b) => {
+      switch (sortOption) {
+        case 'assignee':
+          return a.assignee.localeCompare(b.assignee);
+        case 'dueDate':
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        case 'meeting':
+          return a.meetingTitle.localeCompare(b.meetingTitle);
+        case 'status':
+          return a.status.localeCompare(b.status);
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredTodos(filtered);
+  };
+
+  // 初期化時にソートを適用
+  React.useEffect(() => {
+    applySearchAndSort(todos, searchQuery, sortBy);
+  }, [todos]);
 
   return (
     <div className="space-y-6">
@@ -117,7 +165,7 @@ export default function TodoManagement() {
         <h1 className="text-2xl font-bold text-gray-900">Todo管理</h1>
         <Button 
           className="bg-orange-600 hover:bg-orange-700"
-          onClick={() => setIsExtractionModalOpen(true)}
+          onClick={() => router.push('/todo-extraction')}
         >
           <Download className="h-4 w-4 mr-2" />
           Todoの抽出
@@ -131,17 +179,78 @@ export default function TodoManagement() {
           <Input
             placeholder="Todoを検索..."
             className="pl-10 bg-white border-gray-300"
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
           />
         </div>
-        <Button variant="outline" className="border-gray-300 flex-shrink-0">
-          <Filter className="h-4 w-4 mr-2" />
-          フィルター
-        </Button>
+        <Select value={sortBy} onValueChange={handleSort}>
+          <SelectTrigger className="w-48 border-gray-300 bg-white flex-shrink-0">
+            <Filter className="h-4 w-4 mr-2 flex-shrink-0" />
+            <SelectValue placeholder="並び順を選択" />
+          </SelectTrigger>
+          <SelectContent className="bg-white border border-gray-200 shadow-lg">
+            <SelectItem 
+              value="assignee" 
+              className={`hover:bg-gray-50 ${sortBy === 'assignee' ? 'bg-orange-50' : ''} [&>span[data-radix-select-item-indicator]]:!hidden [&>*:last-child:not(:first-child)]:!hidden`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="text-gray-900">担当者順</span>
+                {sortBy === 'assignee' && (
+                  <Check className="h-4 w-4 text-orange-600 ml-2" />
+                )}
+              </div>
+            </SelectItem>
+            <SelectItem 
+              value="dueDate" 
+              className={`hover:bg-gray-50 ${sortBy === 'dueDate' ? 'bg-orange-50' : ''} [&>span[data-radix-select-item-indicator]]:!hidden [&>*:last-child:not(:first-child)]:!hidden`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="text-gray-900">期限順</span>
+                {sortBy === 'dueDate' && (
+                  <Check className="h-4 w-4 text-orange-600 ml-2" />
+                )}
+              </div>
+            </SelectItem>
+            <SelectItem 
+              value="meeting" 
+              className={`hover:bg-gray-50 ${sortBy === 'meeting' ? 'bg-orange-50' : ''} [&>span[data-radix-select-item-indicator]]:!hidden [&>*:last-child:not(:first-child)]:!hidden`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="text-gray-900">会議順</span>
+                {sortBy === 'meeting' && (
+                  <Check className="h-4 w-4 text-orange-600 ml-2" />
+                )}
+              </div>
+            </SelectItem>
+            <SelectItem 
+              value="status" 
+              className={`hover:bg-gray-50 ${sortBy === 'status' ? 'bg-orange-50' : ''} [&>span[data-radix-select-item-indicator]]:!hidden [&>*:last-child:not(:first-child)]:!hidden`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="text-gray-900">ステータス順</span>
+                {sortBy === 'status' && (
+                  <Check className="h-4 w-4 text-orange-600 ml-2" />
+                )}
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Todo List */}
       <div className="space-y-4">
-        {todos.map((todo) => (
+        {filteredTodos.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500">
+              <AlertCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-lg font-medium">Todoが見つかりません</p>
+              <p className="text-sm mt-1">
+                {searchQuery ? '検索条件を変更してください' : 'Todoを抽出してください'}
+              </p>
+            </div>
+          </div>
+        ) : (
+          filteredTodos.map((todo) => (
           <Card key={todo.id} className="bg-white hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-start space-x-4">
@@ -192,14 +301,9 @@ export default function TodoManagement() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          ))
+        )}
       </div>
-
-      <TodoExtractionModal
-        open={isExtractionModalOpen}
-        onOpenChange={setIsExtractionModalOpen}
-        onAddTodos={handleAddTodos}
-      />
     </div>
   );
 }
