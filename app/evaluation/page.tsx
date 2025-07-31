@@ -46,18 +46,38 @@ const completedEvaluations = [
     rating: 4.2,
     efficiency: '良好',
     satisfaction: 4.1,
-    timeUtilization: 3.8
+    timeUtilization: 3.8,
+    details: {
+      agenda: ['前月の振り返り', 'KPIの確認', '今後の方針', 'リソース配分'],
+      participantFeedback: [
+        { name: '田中太郎', rating: 4, comment: '効率的に進行できました' },
+        { name: '佐藤花子', rating: 5, comment: '議論が活発で良かったです' },
+        { name: '山田一郎', rating: 3, comment: '時間がやや長く感じました' }
+      ],
+      outcomes: ['新規プロジェクトの承認', '予算の再配分', 'チーム体制の見直し'],
+      improvements: ['資料の事前共有', '議論時間の管理', 'アクションアイテムの明確化']
+    }
   },
   {
     id: 5,
-    title: 'クライアント打ち合わせ',
-    date: '2025-01-09',
-    participants: 4,
-    duration: '60分',
-    rating: 4.5,
+    title: '四半期戦略会議',
+    date: '2025-01-12',
+    participants: 15,
+    duration: '120分',
+    rating: 4.6,
     efficiency: '優秀',
     satisfaction: 4.4,
-    timeUtilization: 4.3
+    timeUtilization: 4.3,
+    details: {
+      agenda: ['Q4振り返り', 'Q1戦略立案', '競合分析', '予算計画'],
+      participantFeedback: [
+        { name: '鈴木次郎', rating: 5, comment: '戦略が明確になりました' },
+        { name: '高橋三郎', rating: 4, comment: 'データ分析が充実していました' },
+        { name: '伊藤四郎', rating: 5, comment: '建設的な議論ができました' }
+      ],
+      outcomes: ['Q1目標の設定', '新サービスの開発決定', 'マーケティング戦略の策定'],
+      improvements: ['プレゼン時間の短縮', 'より詳細な競合分析', 'リスク評価の追加']
+    }
   },
   {
     id: 6,
@@ -68,7 +88,17 @@ const completedEvaluations = [
     rating: 3.8,
     efficiency: '普通',
     satisfaction: 3.6,
-    timeUtilization: 3.9
+    timeUtilization: 3.9,
+    details: {
+      agenda: ['新技術の導入検討', 'セキュリティ強化', 'パフォーマンス改善'],
+      participantFeedback: [
+        { name: '開発チームA', rating: 4, comment: '技術的な議論が深まりました' },
+        { name: '開発チームB', rating: 3, comment: '実装の詳細をもう少し話したい' },
+        { name: 'インフラチーム', rating: 4, comment: 'セキュリティ面で良い提案がありました' }
+      ],
+      outcomes: ['新フレームワークの採用', 'セキュリティポリシーの更新', 'パフォーマンス指標の設定'],
+      improvements: ['技術仕様書の事前準備', 'プロトタイプの実演', 'スケジュール調整']
+    }
   }
 ];
 
@@ -97,6 +127,10 @@ export default function EvaluationPage() {
   const router = useRouter();
   const [completedEvals, setCompletedEvals] = useState(completedEvaluations);
   const [pendingEvals, setPendingEvals] = useState(pendingEvaluations);
+
+  const handleViewDetails = (evaluation: any) => {
+    router.push(`/evaluation/detail?id=${evaluation.id}`);
+  };
 
   const handleStartEvaluation = (meeting: any) => {
     // ページ遷移で評価登録シートへ移動
@@ -226,7 +260,11 @@ export default function EvaluationPage() {
                     </div>
                   </div>
                   <div className="flex justify-end mt-3">
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleViewDetails(meeting)}
+                    >
                       詳細を見る
                     </Button>
                   </div>

@@ -14,8 +14,6 @@ import {
   Clock, 
   Users 
 } from 'lucide-react';
-import EvaluationModal from '@/components/EvaluationModal';
-import TodoExtractionModal from '@/components/TodoExtractionModal';
 
 
 // UIコンポーネントのインポートを追加
@@ -144,8 +142,6 @@ export default function MeetingFacilitation() {
   const [isPaused, setIsPaused] = useState(false);
   const [minutes, setMinutes] = useState(mockMinutes);
   const [currentAgenda, setCurrentAgenda] = useState(0);
-  const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
-  const [isTodoExtractionModalOpen, setIsTodoExtractionModalOpen] = useState(false);
 
   useEffect(() => {
     const meetingData = getMeetingById(params.id as string);
@@ -178,11 +174,11 @@ export default function MeetingFacilitation() {
   };
 
   const handleOpenEvaluation = () => {
-    setIsEvaluationModalOpen(true);
+    router.push(`/evaluation/form?title=${encodeURIComponent(meeting.title)}&facilitator=${encodeURIComponent(meeting.facilitator)}`);
   };
 
   const handleOpenTodoExtraction = () => {
-    setIsTodoExtractionModalOpen(true);
+    router.push('/todo-extraction');
   };
 
   const handleFacilitationAction = (action: string) => {
@@ -414,27 +410,6 @@ export default function MeetingFacilitation() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Modals */}
-      <EvaluationModal 
-        open={isEvaluationModalOpen}
-        onOpenChange={setIsEvaluationModalOpen}
-        meetingTitle={meeting.title}
-        facilitator={meeting.facilitator}
-        onSubmitEvaluation={(evaluation) => {
-          console.log('評価が送信されました:', evaluation);
-          setIsEvaluationModalOpen(false);
-        }}
-      />
-      
-      <TodoExtractionModal 
-        open={isTodoExtractionModalOpen}
-        onOpenChange={setIsTodoExtractionModalOpen}
-        onAddTodos={(todos) => {
-          console.log('TODOが追加されました:', todos);
-          setIsTodoExtractionModalOpen(false);
-        }}
-      />
     </div>
   );
 }

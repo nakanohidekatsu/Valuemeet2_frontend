@@ -117,11 +117,13 @@ export default function TodoManagement() {
   };
 
   const handleSort = (sortOption: string) => {
+    console.log('ソートオプション変更:', sortOption); // デバッグ用
     setSortBy(sortOption);
     applySearchAndSort(todos, searchQuery, sortOption);
   };
 
-    const applySearchAndSort = (todoList: any[], query: string, sortOption: string) => {
+  const applySearchAndSort = (todoList: any[], query: string, sortOption: string) => {
+    console.log('ソート処理開始:', { query, sortOption, todoCount: todoList.length }); // デバッグ用
     let filtered = todoList;
 
     // 検索フィルター
@@ -144,12 +146,24 @@ export default function TodoManagement() {
         case 'meeting':
           return a.meetingTitle.localeCompare(b.meetingTitle);
         case 'status':
-          return a.status.localeCompare(b.status);
+          const statusOrder: { [key: string]: number } = { 
+            pending: 1, 
+            in_progress: 2, 
+            completed: 3 
+          };
+          return (statusOrder[a.status] || 0) - (statusOrder[b.status] || 0);
         default:
           return 0;
       }
     });
 
+    console.log('ソート結果:', filtered.map(todo => ({ 
+      title: todo.title, 
+      assignee: todo.assignee, 
+      dueDate: todo.dueDate, 
+      status: todo.status 
+    }))); // デバッグ用
+    
     setFilteredTodos(filtered);
   };
 
@@ -191,7 +205,7 @@ export default function TodoManagement() {
           <SelectContent className="bg-white border border-gray-200 shadow-lg">
             <SelectItem 
               value="assignee" 
-              className={`hover:bg-gray-50 ${sortBy === 'assignee' ? 'bg-orange-50' : ''} [&>span[data-radix-select-item-indicator]]:!hidden [&>*:last-child:not(:first-child)]:!hidden`}
+              className={`hover:bg-gray-50 ${sortBy === 'assignee' ? 'bg-orange-50' : ''}`}
             >
               <div className="flex items-center justify-between w-full">
                 <span className="text-gray-900">担当者順</span>
@@ -202,7 +216,7 @@ export default function TodoManagement() {
             </SelectItem>
             <SelectItem 
               value="dueDate" 
-              className={`hover:bg-gray-50 ${sortBy === 'dueDate' ? 'bg-orange-50' : ''} [&>span[data-radix-select-item-indicator]]:!hidden [&>*:last-child:not(:first-child)]:!hidden`}
+              className={`hover:bg-gray-50 ${sortBy === 'dueDate' ? 'bg-orange-50' : ''}`}
             >
               <div className="flex items-center justify-between w-full">
                 <span className="text-gray-900">期限順</span>
@@ -213,7 +227,7 @@ export default function TodoManagement() {
             </SelectItem>
             <SelectItem 
               value="meeting" 
-              className={`hover:bg-gray-50 ${sortBy === 'meeting' ? 'bg-orange-50' : ''} [&>span[data-radix-select-item-indicator]]:!hidden [&>*:last-child:not(:first-child)]:!hidden`}
+              className={`hover:bg-gray-50 ${sortBy === 'meeting' ? 'bg-orange-50' : ''}`}
             >
               <div className="flex items-center justify-between w-full">
                 <span className="text-gray-900">会議順</span>
@@ -224,7 +238,7 @@ export default function TodoManagement() {
             </SelectItem>
             <SelectItem 
               value="status" 
-              className={`hover:bg-gray-50 ${sortBy === 'status' ? 'bg-orange-50' : ''} [&>span[data-radix-select-item-indicator]]:!hidden [&>*:last-child:not(:first-child)]:!hidden`}
+              className={`hover:bg-gray-50 ${sortBy === 'status' ? 'bg-orange-50' : ''}`}
             >
               <div className="flex items-center justify-between w-full">
                 <span className="text-gray-900">ステータス順</span>
