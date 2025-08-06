@@ -25,6 +25,9 @@ jobs:
 
       - name: 🏗️ Build app (standalone)
         run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          # ほか必要なキー
 
       - name: 🗜️ Create ZIP for deploy
         run: |

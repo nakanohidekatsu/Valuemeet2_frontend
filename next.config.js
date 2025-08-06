@@ -7,6 +7,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // あると無難なオプション
+  poweredByHeader: false,
+  compress: true,
 };
 
 module.exports = nextConfig;
