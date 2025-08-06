@@ -6,15 +6,39 @@ on:
       - main
 
 jobs:
-  test-kudu:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: 🚀 Deploy via Kudu ZIP API (no secrets)
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --omit=dev
+
+      - name: Build app
+        run: npm run build
+
+      - name: Create ZIP for deployment
         run: |
+          zip -r app.zip .next node_modules public package.json package-lock.json next.config.js
+
+      - name: Check ZIP
+        run: ls -lh app.zip
+
+      - name: Deploy to Azure Kudu ZIP API (hardcoded)
+        run: |
+          echo "🛰️ Deploying ZIP..."
           curl -f -X POST https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy \
             -u "aps-n2-01\$aps-n2-01:CH0PcpKCiaxNa1tcJNYvghZiTGjrWjlKFM7ybs6Bb7iH7wMwYijwcaztzRLs" \
             --data-binary "@app.zip" \
             -H "Content-Type: application/zip"
+
+
 
 
 
