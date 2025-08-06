@@ -10,30 +10,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: 📦 Checkout source code
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: 🟢 Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies (omit dev)
+      - name: 📥 Install dependencies
         run: npm install --omit=dev
 
-      - name: Build Next.js SSR app
+      - name: 🏗️ Build Next.js SSR app
         run: npm run build
 
-      - name: Create ZIP file for deploy (include node_modules)
+      - name: 📁 Ensure public dir exists
+        run: mkdir -p public
+
+      - name: 🗜️ Create ZIP for deployment
         run: |
           zip -r app.zip .next node_modules public package.json package-lock.json next.config.js
+          echo "✅ ZIP file created:"
+          ls -lh app.zip
 
-      - name: Deploy via raw Kudu ZIP Deploy API
+      - name: 🔍 List contents of ZIP (for debugging)
+        run: unzip -l app.zip
+
+      - name: 🚀 Deploy via Kudu ZIP API
         run: |
-          curl -X POST "https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy" \
+          curl -v -X POST "https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy" \
             -u "${{ secrets.DEPLOY_USER }}:${{ secrets.DEPLOY_PASSWORD }}" \
             --data-binary "@app.zip" \
             -H "Content-Type: application/zip"
+
+
 
 
 
