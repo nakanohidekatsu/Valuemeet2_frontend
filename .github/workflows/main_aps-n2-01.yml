@@ -1,4 +1,4 @@
-name: Build and Deploy via Kudu API
+name: Test Kudu Connection
 
 on:
   push:
@@ -6,46 +6,15 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  kudu-test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 📦 Checkout source code
-        uses: actions/checkout@v4
-
-      - name: 🟢 Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: 📥 Install dependencies
-        run: npm install --omit=dev
-
-      - name: 🏗️ Build Next.js SSR app
-        run: npm run build
-
-      - name: 📁 Ensure public dir exists
-        run: mkdir -p public
-
-      - name: 🗜️ Create ZIP for deployment
+      - name: 🧪 Test Kudu connection
         run: |
-          zip -r app.zip .next node_modules public package.json package-lock.json next.config.js
-          echo "✅ ZIP file created:"
-          ls -lh app.zip
+          echo "Testing Kudu connection..."
+          curl -i -u "${{ secrets.DEPLOY_USER }}:${{ secrets.DEPLOY_PASSWORD }}" \
+            https://aps-n2-01.scm.azurewebsites.net/api/settings
 
-      - name: 🧮 Count files in ZIP
-        run: |
-          FILE_COUNT=$(unzip -l app.zip | tail -n +4 | head -n -2 | wc -l)
-          echo "📦 Files in ZIP: $FILE_COUNT"
-
-      - name: 🚀 Deploy via Kudu ZIP API
-        run: |
-          echo "🛰️ Deploying to Azure via ZIP Deploy..."
-          curl -f -X POST "https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy" \
-            -u "${{ secrets.DEPLOY_USER }}:${{ secrets.DEPLOY_PASSWORD }}" \
-            --data-binary "@app.zip" \
-            -H "Content-Type: application/zip"
 
 
 
