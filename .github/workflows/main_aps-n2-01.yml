@@ -1,36 +1,41 @@
-name: 🚀 Deploy to Azure Web App
+name: Deploy to Azure Web App
 
 on:
   push:
     branches:
       - main
 
+concurrency:
+  group: "deploy-to-azure"
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Checkout source
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🟢 Set up Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: 📥 Install dependencies
-        run: npm ci
+      - name: Install dependencies
+        run: npm install --omit=dev
 
-      - name: 🛠️ Build Next.js app
+      - name: Build Next.js app
         run: npm run build
 
-      - name: 🚀 Deploy to Azure Web App
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: aps-n2-01  # App Service名（"https://<ここ>.azurewebsites.net" の <ここ>）
+          app-name: aps-n2-01
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: .
+
 
 
 
