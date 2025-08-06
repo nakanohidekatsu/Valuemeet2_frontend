@@ -34,20 +34,19 @@ jobs:
           echo "✅ ZIP file created:"
           ls -lh app.zip
 
-      - name: 🔍 Inspect ZIP (summary only)
+      - name: 🧮 Count files in ZIP
         run: |
-          echo "📂 Top-level structure:"
-          unzip -l app.zip | tail -n +4 | head -n 10
-          echo "🧮 Total files:"
-          unzip -l app.zip | tail -n +4 | head -n -2 | wc -l
+          FILE_COUNT=$(unzip -l app.zip | tail -n +4 | head -n -2 | wc -l)
+          echo "📦 Files in ZIP: $FILE_COUNT"
 
       - name: 🚀 Deploy via Kudu ZIP API
         run: |
           echo "🛰️ Deploying to Azure via ZIP Deploy..."
-          curl -v -f -X POST "https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy" \
+          curl -f -v -X POST "https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy" \
             -u "${{ secrets.DEPLOY_USER }}:${{ secrets.DEPLOY_PASSWORD }}" \
             --data-binary "@app.zip" \
             -H "Content-Type: application/zip"
+
 
 
 
