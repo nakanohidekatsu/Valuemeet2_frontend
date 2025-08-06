@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: 📦 Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # ← public/.keep を確実に取得するために追加
 
       - name: 🟢 Set up Node.js
         uses: actions/setup-node@v4
@@ -26,11 +28,18 @@ jobs:
 
       - name: 🗜️ Create ZIP for deploy
         run: |
-          mkdir output
+          mkdir -p output/.next  # static コピー先が必要
           cp package.json output/
           cp -r .next/standalone/* output/
           cp -r .next/static output/.next/
-          cp -r public output/
+          
+          # public が存在すればコピー、なければスキップ
+          if [ -d "public" ]; then
+            cp -r public output/
+          else
+            echo "⚠️ public folder not found, skipping"
+          fi
+          
           cd output
           zip -r ../app.zip .
           cd ..
