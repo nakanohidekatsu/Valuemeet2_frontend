@@ -45,20 +45,7 @@ jobs:
           zip -r ../app.zip .
           cd ..
 
-      # Azure App Serviceを事前に再起動（409エラー対策）
-      - name: 🔄 Restart Azure App Service
-        uses: azure/CLI@v1
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az webapp restart --name aps-n2-01 --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }}        continue-on-error: true # 再起動が失敗しても続行
-
-      # 再起動後に少し待機
-      - name: ⏳ Wait for restart
-        run: sleep 30
-
-      # リトライ機能付きデプロイメント
+      # リトライ機能付きデプロイメント（409エラー対策）
       - name: 🚀 Deploy to Azure (Attempt 1)
         id: deploy_attempt1
         uses: azure/webapps-deploy@v2
@@ -70,9 +57,15 @@ jobs:
         timeout-minutes: 15
         continue-on-error: true
 
-      # 1回目が失敗した場合の2回目の試行
+      # 1回目が失敗した場合は少し待機
+      - name: ⏳ Wait before retry
+        if: steps.deploy_attempt1.outcome == 'failure'
+        run: sleep 60
+
+      # 2回目の試行
       - name: 🚀 Deploy to Azure (Attempt 2)
         if: steps.deploy_attempt1.outcome == 'failure'
+        id: deploy_attempt2
         uses: azure/webapps-deploy@v2
         with:
           app-name: aps-n2-01
@@ -80,8 +73,21 @@ jobs:
           package: app.zip
           slot-name: production
         timeout-minutes: 15
+        continue-on-error: true
+
+      # 3回目の試行（最終）
+      - name: 🚀 Deploy to Azure (Final Attempt)
+        if: steps.deploy_attempt2.outcome == 'failure'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: aps-n2-01
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: app.zip
+          slot-name: production
+        timeout-minutes: 20
 
       - name: ✅ Deployment completed
         run: |
           echo "🎉 アプリケーションが正常にデプロイされました"
           echo "🌐 URL: https://aps-n2-01.azurewebsites.net"
+          
