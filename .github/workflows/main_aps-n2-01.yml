@@ -42,7 +42,7 @@ jobs:
       - name: 🚀 Deploy via Kudu ZIP API
         run: |
           echo "🛰️ Deploying to Azure via ZIP Deploy..."
-          curl -f -v -X POST "https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy" \
+          curl -f -X POST "https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy" \
             -u "${{ secrets.DEPLOY_USER }}:${{ secrets.DEPLOY_PASSWORD }}" \
             --data-binary "@app.zip" \
             -H "Content-Type: application/zip"
