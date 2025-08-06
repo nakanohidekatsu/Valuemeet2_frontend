@@ -1,40 +1,52 @@
-name: Deploy to Azure Web App
+name: Deploy to Azure via Publish Profile
 
 on:
   push:
     branches:
       - main
 
-concurrency:
-  group: "deploy-to-azure"
-  cancel-in-progress: true
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: 📦 Checkout source
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: 🟢 Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install --omit=dev
+      - name: 📥 Install dependencies
+        run: |
+          echo "▶ npm install start"
+          npm ci --omit=dev
+          echo "✅ npm install complete"
 
-      - name: Build Next.js app
-        run: npm run build
+      - name: 🛠️ Build project
+        run: |
+          echo "▶ next build start"
+          npm run build
+          echo "✅ next build complete"
 
-      - name: Deploy to Azure Web App
+      - name: 📁 Ensure public folder exists
+        run: mkdir -p public
+
+      - name: 🗜️ Create ZIP for deployment
+        run: |
+          echo "▶ Zipping files..."
+          zip -r app.zip .next node_modules public package.json package-lock.json next.config.js > /dev/null
+          ls -lh app.zip
+
+      - name: 🚀 Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
           app-name: aps-n2-01
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: .
+          package: app.zip
+
 
 
 
