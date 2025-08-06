@@ -1,19 +1,10 @@
-name: Test Kudu Connection
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  kudu-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🧪 Test Kudu connection
-        run: |
-          echo "Testing Kudu connection..."
-          curl -i -u "${{ secrets.DEPLOY_USER }}:${{ secrets.DEPLOY_PASSWORD }}" \
-            https://aps-n2-01.scm.azurewebsites.net/api/settings
+- name: 🚀 Deploy via Kudu ZIP API (temporary credentials)
+  run: |
+    echo "🛰️ Deploying to Azure via ZIP Deploy..."
+    curl -f -v -X POST "https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy" \
+      -u "aps-n2-01\$aps-n2-01:CH0PcpKCiaxNa1tcJNYvghZiTGjrWjlKFM7ybs6Bb7iH7wMwYijwcaztzRLs" \
+      --data-binary "@app.zip" \
+      -H "Content-Type: application/zip"
 
 
 
