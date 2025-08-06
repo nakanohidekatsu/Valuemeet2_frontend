@@ -1,16 +1,15 @@
-name: Deploy to Azure via Publish Profile
+name: Build and Deploy Next.js App to Azure
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Checkout source
+      - name: 📦 Checkout repo
         uses: actions/checkout@v4
 
       - name: 🟢 Set up Node.js
@@ -20,32 +19,30 @@ jobs:
           cache: 'npm'
 
       - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build app (standalone)
+        run: npm run build
+
+      - name: 🗜️ Create ZIP for deploy
         run: |
-          echo "▶ npm install start"
-          npm ci --omit=dev
-          echo "✅ npm install complete"
+          mkdir output
+          cp package.json output/
+          cp -r .next/standalone/* output/
+          cp -r .next/static output/.next/
+          cp -r public output/
+          cd output
+          zip -r ../app.zip .
+          cd ..
 
-      - name: 🛠️ Build project
-        run: |
-          echo "▶ next build start"
-          npm run build
-          echo "✅ next build complete"
-
-      - name: 📁 Ensure public folder exists
-        run: mkdir -p public
-
-      - name: 🗜️ Create ZIP for deployment
-        run: |
-          echo "▶ Zipping files..."
-          zip -r app.zip .next node_modules public package.json package-lock.json next.config.js > /dev/null
-          ls -lh app.zip
-
-      - name: 🚀 Deploy to Azure
+      - name: 🚀 Deploy to Azure via Web Apps Deploy
         uses: azure/webapps-deploy@v2
         with:
           app-name: aps-n2-01
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: app.zip
+
+
 
 
 
