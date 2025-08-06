@@ -9,11 +9,13 @@ jobs:
   test-kudu:
     runs-on: ubuntu-latest
     steps:
-      - name: 🧪 Test Kudu connection
+      - name: 🚀 Deploy via Kudu ZIP API (no secrets)
         run: |
-          echo "Testing Kudu connection..."
-          curl -i -u "aps-n2-01\$aps-n2-01:CH0PcpKCiaxNa1tcJNYvghZiTGjrWjlKFM7ybs6Bb7iH7wMwYijwcaztzRLs" \
-            https://aps-n2-01.scm.azurewebsites.net/api/settings
+          curl -f -X POST https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy \
+            -u "aps-n2-01\$aps-n2-01:CH0PcpKCiaxNa1tcJNYvghZiTGjrWjlKFM7ybs6Bb7iH7wMwYijwcaztzRLs" \
+            --data-binary "@app.zip" \
+            -H "Content-Type: application/zip"
+
 
 
 
