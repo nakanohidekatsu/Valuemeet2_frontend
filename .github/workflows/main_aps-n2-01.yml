@@ -7,12 +7,12 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: 📦 Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # ← public/.keep を確実に取得するために追加
+          fetch-depth: 0 # ← public/.keep を確実に取得するために追加
 
       - name: 🟢 Set up Node.js
         uses: actions/setup-node@v4
@@ -31,52 +31,59 @@ jobs:
 
       - name: 🗜️ Create ZIP for deploy
         run: |
-          mkdir -p output/.next  # static コピー先が必要
+          mkdir -p output/.next # static コピー先が必要
           cp package.json output/
           cp -r .next/standalone/* output/
           cp -r .next/static output/.next/
-          
           # public が存在すればコピー、なければスキップ
           if [ -d "public" ]; then
             cp -r public output/
           else
             echo "⚠️ public folder not found, skipping"
           fi
-          
           cd output
           zip -r ../app.zip .
           cd ..
 
-      - name: 🚀 Deploy to Azure via Web Apps Deploy
+      # Azure App Serviceを事前に再起動（409エラー対策）
+      - name: 🔄 Restart Azure App Service
+        uses: azure/CLI@v1
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az webapp restart --name aps-n2-01 --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        continue-on-error: true # 再起動が失敗しても続行
+
+      # 再起動後に少し待機
+      - name: ⏳ Wait for restart
+        run: sleep 30
+
+      # リトライ機能付きデプロイメント
+      - name: 🚀 Deploy to Azure (Attempt 1)
+        id: deploy_attempt1
         uses: azure/webapps-deploy@v2
         with:
           app-name: aps-n2-01
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: app.zip
+          slot-name: production
+        timeout-minutes: 15
+        continue-on-error: true
 
+      # 1回目が失敗した場合の2回目の試行
+      - name: 🚀 Deploy to Azure (Attempt 2)
+        if: steps.deploy_attempt1.outcome == 'failure'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: aps-n2-01
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: app.zip
+          slot-name: production
+        timeout-minutes: 15
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      - name: ✅ Deployment completed
+        run: |
+          echo "🎉 アプリケーションが正常にデプロイされました"
+          echo "🌐 URL: https://aps-n2-01.azurewebsites.net"
