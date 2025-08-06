@@ -18,15 +18,15 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (omit dev)
+        run: npm install --omit=dev
 
       - name: Build Next.js SSR app
         run: npm run build
 
-      - name: Create ZIP file for deploy
+      - name: Create ZIP file for deploy (include node_modules)
         run: |
-          zip -r app.zip .next public package.json package-lock.json next.config.js
+          zip -r app.zip .next node_modules public package.json package-lock.json next.config.js
 
       - name: Deploy via raw Kudu ZIP Deploy API
         run: |
