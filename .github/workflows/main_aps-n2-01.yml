@@ -30,16 +30,20 @@ jobs:
 
       - name: 🗜️ Create ZIP for deployment
         run: |
-          zip -r app.zip .next node_modules public package.json package-lock.json next.config.js
+          zip -r app.zip . -x "*.git*" "*node_modules/.cache*" "*tests*"
           echo "✅ ZIP file created:"
           ls -lh app.zip
 
-      - name: 🔍 List contents of ZIP (for debugging)
-        run: unzip -l app.zip
+      - name: 🔍 Inspect ZIP (summary only)
+        run: |
+          echo "📂 Top-level structure:"
+          unzip -l app.zip | tail -n +4 | head -n 10
+          echo "🧮 Total files:"
+          unzip -l app.zip | tail -n +4 | head -n -2 | wc -l
 
       - name: 🚀 Deploy via Kudu ZIP API
         run: |
-          curl -v -X POST "https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy" \
+          curl -X POST "https://aps-n2-01.scm.azurewebsites.net/api/zipdeploy" \
             -u "${{ secrets.DEPLOY_USER }}:${{ secrets.DEPLOY_PASSWORD }}" \
             --data-binary "@app.zip" \
             -H "Content-Type: application/zip"
