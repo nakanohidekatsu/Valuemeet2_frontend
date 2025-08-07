@@ -45,6 +45,11 @@ jobs:
           zip -r ../app.zip .
           cd ..
 
+      - name: 📏 Show ZIP size
+        run: |
+          echo "Size of app.zip:"
+          ls -lh app.zip
+    
       # リトライ機能付きデプロイメント（409エラー対策）
       - name: 🚀 Deploy to Azure (Attempt 1)
         id: deploy_attempt1
@@ -90,4 +95,5 @@ jobs:
         run: |
           echo "🎉 アプリケーションが正常にデプロイされました"
           echo "🌐 URL: https://aps-n2-01.azurewebsites.net"
+
           
