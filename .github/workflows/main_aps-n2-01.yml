@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: deploy-to-azure
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -97,3 +101,4 @@ jobs:
           echo "🌐 URL: https://aps-n2-01.azurewebsites.net"
 
           
+
