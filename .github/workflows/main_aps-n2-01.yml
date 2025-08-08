@@ -46,21 +46,45 @@ jobs:
           zip -r ../app.zip .
           cd ..
 
-      - name: 📏 Show ZIP size and file count  # ◆ 変更: ZIPサイズとファイル数を表示
+      - name: 📏 Show ZIP size and file count  # ◆ ZIPサイズとファイル数を表示
         run: |
           echo "Size of app.zip:" && ls -lh app.zip | awk '{print $5 " " $9}'
           echo "File count in app.zip:" && unzip -l app.zip | tail -n 1 | awk '{print $1 " files"}'
 
-      - name: 🚀 Deploy to Azure  # ◆ リトライ構成をシンプルに変更
+      # ◆ 409対策の3段階リトライ構成
+      - name: 🚀 Deploy to Azure (Attempt 1)
+        id: deploy_attempt1
         uses: azure/webapps-deploy@v2
         with:
           app-name: aps-n2-01
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: app.zip
           slot-name: production
-        retry:
-          max-attempts: 3
-          delay-seconds: 10
+        continue-on-error: true
+
+      - name: ⏳ Wait before retry
+        if: steps.deploy_attempt1.outcome == 'failure'
+        run: sleep 10
+
+      - name: 🚀 Deploy to Azure (Attempt 2)
+        if: steps.deploy_attempt1.outcome == 'failure'
+        id: deploy_attempt2
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: aps-n2-01
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: app.zip
+          slot-name: production
+        continue-on-error: true
+
+      - name: 🚀 Deploy to Azure (Final Attempt)
+        if: steps.deploy_attempt2.outcome == 'failure'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: aps-n2-01
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: app.zip
+          slot-name: production
         timeout-minutes: 20
 
       - name: ✅ Deployment completed
@@ -69,5 +93,6 @@ jobs:
           echo "🌐 URL: https://aps-n2-01.azurewebsites.net"
 
           
+
 
 
