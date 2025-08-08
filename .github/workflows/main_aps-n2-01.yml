@@ -11,12 +11,11 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: 📦 Checkout repo
+      - name: 🎞 Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # ← public/.keep を確実に取得するために追加
+          fetch-depth: 0
 
       - name: 🟢 Set up Node.js
         uses: actions/setup-node@v4
@@ -24,22 +23,20 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: 📥 Install dependencies
+      - name: 📅 Install dependencies
         run: npm ci
 
       - name: 🏗️ Build app (standalone)
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
-          # ほか必要なキー
 
       - name: 🗜️ Create ZIP for deploy
         run: |
-          mkdir -p output/.next # static コピー先が必要
+          mkdir -p output/.next
           cp package.json output/
           cp -r .next/standalone/* output/
           cp -r .next/static output/.next/
-          # public が存在すればコピー、なければスキップ
           if [ -d "public" ]; then
             cp -r public output/
           else
@@ -49,50 +46,21 @@ jobs:
           zip -r ../app.zip .
           cd ..
 
-      - name: 📏 Show ZIP size
+      - name: 📏 Show ZIP size and file count  # ◆ 変更: ZIPサイズとファイル数を表示
         run: |
-          echo "Size of app.zip:"
-          ls -lh app.zip
-    
-      # リトライ機能付きデプロイメント（409エラー対策）
-      - name: 🚀 Deploy to Azure (Attempt 1)
-        id: deploy_attempt1
+          echo "Size of app.zip:" && ls -lh app.zip | awk '{print $5 " " $9}'
+          echo "File count in app.zip:" && unzip -l app.zip | tail -n 1 | awk '{print $1 " files"}'
+
+      - name: 🚀 Deploy to Azure  # ◆ リトライ構成をシンプルに変更
         uses: azure/webapps-deploy@v2
         with:
           app-name: aps-n2-01
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: app.zip
           slot-name: production
-        timeout-minutes: 15
-        continue-on-error: true
-
-      # 1回目が失敗した場合は少し待機
-      - name: ⏳ Wait before retry
-        if: steps.deploy_attempt1.outcome == 'failure'
-        run: sleep 60
-
-      # 2回目の試行
-      - name: 🚀 Deploy to Azure (Attempt 2)
-        if: steps.deploy_attempt1.outcome == 'failure'
-        id: deploy_attempt2
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: aps-n2-01
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: app.zip
-          slot-name: production
-        timeout-minutes: 15
-        continue-on-error: true
-
-      # 3回目の試行（最終）
-      - name: 🚀 Deploy to Azure (Final Attempt)
-        if: steps.deploy_attempt2.outcome == 'failure'
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: aps-n2-01
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: app.zip
-          slot-name: production
+        retry:
+          max-attempts: 3
+          delay-seconds: 10
         timeout-minutes: 20
 
       - name: ✅ Deployment completed
@@ -101,4 +69,5 @@ jobs:
           echo "🌐 URL: https://aps-n2-01.azurewebsites.net"
 
           
+
 
