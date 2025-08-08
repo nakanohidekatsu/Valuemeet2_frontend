@@ -34,7 +34,8 @@ jobs:
       - name: 🗜️ Create ZIP for deploy
         run: |
           mkdir -p output/.next
-          cp package.json output/
+          # package.json を含めると Oryx によるビルドが実行されるため除外
+          # cp package.json output/
           cp -r .next/standalone/* output/
           cp -r .next/static output/.next/
           if [ -d "public" ]; then
@@ -43,13 +44,13 @@ jobs:
             echo "⚠️ public folder not found, skipping"
           fi
           cd output
-          zip -r ../app.zip .
+          zip -r ../app.zip . > /dev/null  # ◆ 詳細なファイル一覧出力を抑制
           cd ..
 
       - name: 📏 Show ZIP size and file count  # ◆ ZIPサイズとファイル数を表示
         run: |
           echo "Size of app.zip:" && ls -lh app.zip | awk '{print $5 " " $9}'
-          echo "File count in app.zip:" && unzip -l app.zip | tail -n 1 | awk '{print $1 " files"}'
+          echo "File count in app.zip:" && unzip -l app.zip | tail -n1 | awk '{print $1 " files"}'
 
       # ◆ 409対策の3段階リトライ構成
       - name: 🚀 Deploy to Azure (Attempt 1)
@@ -93,6 +94,7 @@ jobs:
           echo "🌐 URL: https://aps-n2-01.azurewebsites.net"
 
           
+
 
 
 
