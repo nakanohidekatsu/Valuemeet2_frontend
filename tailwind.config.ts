@@ -87,4 +87,11 @@ const config: Config = {
   },
   plugins: [require('tailwindcss-animate')],
 };
-export default config;
+export default {
+  content: [
+    "./app/**/*.{ts,tsx,js,jsx,mdx}",
+    "./components/**/*.{ts,tsx,js,jsx}",
+  ],
+  theme: { extend: {} },
+  plugins: [],
+};
